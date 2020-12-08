@@ -1,26 +1,17 @@
+import com.atlassian.jira.event.type.EventDispatchOption
 import com.atlassian.jira.component.ComponentAccessor
-import java.text.DecimalFormat
 
+def commentManager = ComponentAccessor.commentManager
+def issueManager = ComponentAccessor.issueManager
 
-def im = ComponentAccessor.issueManager
-def issue = im.getIssueByCurrentKey("KH-1")
+if(event == null || event.getIssue() == null) return
+def issue = event.getIssue()
+def issueId = issue.id
 
+def mutableIssue = issueManager.getIssueObject(issueId)
+def comment = commentManager.getLastComment(issue)
 
-def STATUS_INPROGRESS = "3"
-def STATUS_DONE = "10001"
-def STATUS_TODO = "10000"
+if(mutableIssue == null || comment == null) return
+mutableIssue.setDescription(comment.getBody())
 
-def df = new DecimalFormat("#0.00")
-
-def total = issue.subTaskObjects.size()
-def totalDoneTask = 0
-
-for(i in issue.subTaskObjects){
-    if(i.status.id.equals(STATUS_DONE)){
-        totalDoneTask++
-    }
-}
-
-
-
-return df.format((totalDoneTask/total)*100) + " % of the subtask is done "
+issueManager.updateIssue(event.user, mutableIssue, EventDispatchOption.ISSUE_UPDATED, false)

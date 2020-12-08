@@ -14,6 +14,8 @@ def searchResults = searchService.search(loginUser, query, PagerFilter.getUnlimi
 String jiraIssues = ""
 String delim = ""
 
+if(searchResults == null) return jiraIssues
+
 //loop through the search result and concantenate the issue key into our result
 searchResults.getResults().each {
     issue ->
